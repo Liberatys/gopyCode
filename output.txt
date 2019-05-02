@@ -1,0 +1,140 @@
+files.go
+
+
+package main
+
+import (
+	"os"
+	"path/filepath"
+)
+
+var fileList []string
+
+func getFileListOfDirectory(root string) ([]string, error) {
+	var files []string
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			files = append(files, path)
+		}
+		return nil
+	})
+	return files, err
+}
+
+
+
+main.go
+
+
+package main
+
+import (
+	"os"
+	"path"
+	"path/filepath"
+)
+
+func main() {
+	arguments := os.Args[1:]
+	if len(arguments) < 2 {
+		panic("Please provide output filename and extensions to search for, like\ngopyCode output.txt .java")
+	}
+	currentFilePath, err := filepath.Abs("./")
+	if err != nil {
+		panic(err)
+	}
+	files, err := getFileListOfDirectory(currentFilePath)
+	if err != nil {
+		panic(err)
+	}
+	var FileExtensions map[string][]string
+	FileExtensions = make(map[string][]string)
+	createNewFile(arguments[0])
+	arguments = arguments[1:]
+	//var element []string
+	for i := range files {
+		for j := range arguments {
+			if path.Ext(files[i]) == arguments[j] {
+				if _, ok := FileExtensions[arguments[j]]; ok == false {
+					FileExtensions[arguments[j]] = make([]string, 0)
+				}
+				FileExtensions[arguments[j]] = append(FileExtensions[arguments[j]], files[i])
+			}
+		}
+	}
+	for _, value := range FileExtensions {
+		for i := range value {
+			readFileData(value[i])
+		}
+	}
+	closeFile()
+}
+
+
+
+writer.go
+
+
+package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"sync"
+)
+
+var mu sync.Mutex
+var file *os.File
+
+func createNewFile(fileName string) {
+	f, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	if err != nil {
+		panic(err)
+	}
+	file = f
+}
+
+func writeToFile(data []byte) {
+	mu.Lock()
+	file.Write([]byte(data))
+	mu.Unlock()
+}
+
+func closeFile() {
+	mu.Lock()
+	file.Close()
+	mu.Unlock()
+}
+
+func readFileData(filePath string) {
+	b, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		fmt.Print(err)
+	}
+	data := filepath.Base(filePath) + "\n\n\n" + string(b[:]) + "\n\n\n"
+	writeToFile([]byte(data))
+}
+
+
+
+java.java
+
+
+dadadasd
+dadadasdad
+
+abs(d
+as
+d
+
+d
+d
+a
+d
+as
+dsad
+ad);
+
+

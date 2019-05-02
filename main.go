@@ -7,6 +7,10 @@ import (
 )
 
 func main() {
+	arguments := os.Args[1:]
+	if len(arguments) < 2 {
+		panic("Please provide output filename and extensions to search for, like\ngopyCode output.txt .java")
+	}
 	currentFilePath, err := filepath.Abs("./")
 	if err != nil {
 		panic(err)
@@ -15,18 +19,25 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	createNewFile(os.Args[2])
-	endings := os.Args[1]
-	if endings == "" {
-		panic("error")
-	}
-	var element []string
+	var FileExtensions map[string][]string
+	FileExtensions = make(map[string][]string)
+	createNewFile(arguments[0])
+	arguments = arguments[1:]
+	//var element []string
 	for i := range files {
-		if path.Ext(files[i]) == endings {
-			element = append(element, files[i])
+		for j := range arguments {
+			if path.Ext(files[i]) == arguments[j] {
+				if _, ok := FileExtensions[arguments[j]]; ok == false {
+					FileExtensions[arguments[j]] = make([]string, 0)
+				}
+				FileExtensions[arguments[j]] = append(FileExtensions[arguments[j]], files[i])
+			}
 		}
 	}
-	for i := range element {
-		readFileData(element[i])
+	for _, value := range FileExtensions {
+		for i := range value {
+			readFileData(value[i])
+		}
 	}
+	closeFile()
 }

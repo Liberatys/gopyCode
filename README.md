@@ -4,9 +4,13 @@ An easy to use code summary tool, that collects all source code for a given file
 All source code is written into a single file you can copy your code from.
 # usage
 
-gopyCode filending outputFileName
+gopyCode outputFileName filending
 
-gopyCode .java javaSummary.txt
+gopyCode javaSummary.txt .java
+
+
+it is also possible to add multiple endings
+gopyCode codeSummary.txt .java .go
 
 
 # Future

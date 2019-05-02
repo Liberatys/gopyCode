@@ -21,14 +21,14 @@ func createNewFile(fileName string) {
 
 func writeToFile(data []byte) {
 	mu.Lock()
-	defer mu.Unlock()
 	file.Write([]byte(data))
+	mu.Unlock()
 }
 
 func closeFile() {
 	mu.Lock()
-	defer mu.Unlock()
 	file.Close()
+	mu.Unlock()
 }
 
 func readFileData(filePath string) {
