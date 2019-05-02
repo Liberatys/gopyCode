@@ -1,0 +1,19 @@
+# gopyCode
+
+An easy to use code summary tool, that collects all source code for a given file ending in a directory.
+All source code is written into a single file you can copy your code from.
+# usage
+
+gopyCode filending outputFileName
+
+gopyCode .java javaSummary.txt
+
+
+# Future
+
+I hacked this for a project, where I had to send all my source code in a single file. So I just wrote this little helper and it was done in about 5s with all files.
+
+Maybe, I will expand on this idea in the future.
+
+
+# Thanks
