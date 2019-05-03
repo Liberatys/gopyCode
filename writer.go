@@ -37,6 +37,6 @@ func readFileData(filePath string) {
 		fmt.Print(err)
 	}
 	dir := filepath.Dir(filePath)
-	data := dir + "/" + filepath.Base(filePath) + "\n\n\n" + string(b[:]) + "\n\n\n"
+	data := filepath.Base(dir) + "/" + filepath.Base(filePath) + "\n\n\n" + string(b[:]) + "\n\n\n"
 	writeToFile([]byte(data))
 }
