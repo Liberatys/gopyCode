@@ -13,6 +13,14 @@ it is also possible to add multiple endings
 gopyCode codeSummary.txt .java .go
 
 
+At the beginning of the collected file, there will be a table with all files located and displayed by their extension.
+
+    ".go": [
+        "gopyCode/files.go",
+        "gopyCode/main.go",
+        "gopyCode/writer.go"
+    ]
+
 # Future
 
 I hacked this for a project, where I had to send all my source code in a single file. So I just wrote this little helper and it was done in about 5s with all files.

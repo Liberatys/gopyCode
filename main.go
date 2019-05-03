@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 	"path"
 	"path/filepath"
@@ -11,6 +12,7 @@ func main() {
 	if len(arguments) < 2 {
 		panic("Please provide output filename and extensions to search for, like\ngopyCode output.txt .java")
 	}
+
 	currentFilePath, err := filepath.Abs("./")
 	if err != nil {
 		panic(err)
@@ -34,6 +36,17 @@ func main() {
 			}
 		}
 	}
+	mapping := make(map[string][]string)
+	for key, value := range FileExtensions {
+		var newValues = make([]string, len(value))
+		for i := range value {
+			newValues[i] = filepath.Base(filepath.Dir(value[i])) + "/" + filepath.Base(value[i])
+		}
+		mapping[key] = newValues
+	}
+	data, _ := json.MarshalIndent(mapping, "", "    ")
+	writing := string(data[:]) + "\n\n\n"
+	writeToFile([]byte(writing))
 	for _, value := range FileExtensions {
 		for i := range value {
 			readFileData(value[i])
