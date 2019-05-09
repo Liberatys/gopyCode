@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 )
 
@@ -12,11 +13,13 @@ var mu sync.Mutex
 var file *os.File
 
 func createNewFile(fileName string) {
+	mu.Lock()
 	f, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
 		panic(err)
 	}
 	file = f
+	mu.Unlock()
 }
 
 func writeToFile(data []byte) {
@@ -27,7 +30,7 @@ func writeToFile(data []byte) {
 
 func closeFile() {
 	mu.Lock()
-	file.Close()
+	fmt.Println(file.Close())
 	mu.Unlock()
 }
 
@@ -37,6 +40,10 @@ func readFileData(filePath string) {
 		fmt.Print(err)
 	}
 	dir := filepath.Dir(filePath)
-	data := filepath.Base(dir) + "/" + filepath.Base(filePath) + "\n\n\n" + string(b[:]) + "\n\n\n"
+
+	fileName := "| " + filepath.Base(dir) + "/" + filepath.Base(filePath) + " |"
+	fileNameLength := len(fileName)
+	fileName = strings.Repeat("-", fileNameLength-3) + "+\n" + fileName
+	data := "+ " + fileName + "\n+ " + strings.Repeat("-", fileNameLength-3) + "+\n\n\n" + string(b[:]) + "\n\n\n"
 	go writeToFile([]byte(data))
 }

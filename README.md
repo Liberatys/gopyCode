@@ -1,7 +1,10 @@
-# gopyCode
+<p align="center">
+    <img src="GopyKitty.png" height="400" width="400">
+</p>
 
+# gopyCode
 An easy to use code summary tool, that collects all source code for a given file ending in a directory.
-All source code is written into a single file you can copy your code from.
+All source code is written into a single file you can copy your code from. The tool also provides an overview of all collected files boundled by the extension they have.
 # usage
 
 gopyCode outputFileName filending

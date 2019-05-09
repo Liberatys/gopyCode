@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 )
 
 func main() {
@@ -12,7 +13,6 @@ func main() {
 	if len(arguments) < 2 {
 		panic("Please provide output filename and extensions to search for, like\ngopyCode output.txt .java")
 	}
-
 	currentFilePath, err := filepath.Abs("./")
 	if err != nil {
 		panic(err)
@@ -51,6 +51,7 @@ func main() {
 		for i := range value {
 			readFileData(value[i])
 		}
+		writeToFile([]byte(strings.Repeat("-", 80)))
 	}
 	closeFile()
 }
