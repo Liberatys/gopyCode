@@ -8,31 +8,47 @@ import (
 	"strings"
 )
 
+type Gopier struct {
+	startFolder string
+	outputFile  string
+	extensions  []string
+}
+
+func (gopier *Gopier) checkForDefaults() {
+	if gopier.startFolder == "" {
+		currentFilePath, err := filepath.Abs("./")
+		if err != nil {
+			panic("Not able to find current folder")
+		}
+		gopier.startFolder = currentFilePath
+	}
+	if gopier.outputFile == "" {
+		gopier.outputFile = "output.txt"
+	}
+	if len(gopier.extensions) == 0 {
+		panic("Please set extensions to use")
+	}
+}
+
 func main() {
 	arguments := os.Args[1:]
-	if len(arguments) < 2 {
-		panic("Please provide output filename and extensions to search for, like\ngopyCode output.txt .java")
-	}
-	currentFilePath, err := filepath.Abs("./")
-	if err != nil {
-		panic(err)
-	}
-	files, err := getFileListOfDirectory(currentFilePath)
+	setFlags()
+	gopier := parseFlags(arguments)
+	gopier.checkForDefaults()
+	files, err := getFileListOfDirectory(gopier.startFolder)
 	if err != nil {
 		panic(err)
 	}
 	var FileExtensions map[string][]string
 	FileExtensions = make(map[string][]string)
-	createNewFile(arguments[0])
-	arguments = arguments[1:]
-	//var element []string
+	createNewFile(gopier.outputFile)
+	for extension := range gopier.extensions {
+		FileExtensions[gopier.extensions[extension]] = make([]string, 0)
+	}
 	for i := range files {
-		for j := range arguments {
-			if path.Ext(files[i]) == arguments[j] {
-				if _, ok := FileExtensions[arguments[j]]; ok == false {
-					FileExtensions[arguments[j]] = make([]string, 0)
-				}
-				FileExtensions[arguments[j]] = append(FileExtensions[arguments[j]], files[i])
+		for j := range gopier.extensions {
+			if path.Ext(files[i]) == gopier.extensions[j] {
+				FileExtensions[gopier.extensions[j]] = append(FileExtensions[gopier.extensions[j]], files[i])
 			}
 		}
 	}
@@ -44,14 +60,19 @@ func main() {
 		}
 		mapping[key] = newValues
 	}
+	//display overview map on top of the file
 	data, _ := json.MarshalIndent(mapping, "", "    ")
 	writing := string(data[:]) + "\n\n\n"
+	addRoutine()
 	writeToFile([]byte(writing))
 	for _, value := range FileExtensions {
 		for i := range value {
 			readFileData(value[i])
 		}
-		writeToFile([]byte(strings.Repeat("-", 80)))
+		routines.Wait()
+		addRoutine()
+		writeToFile([]byte(strings.Repeat("-", 80) + "\n"))
 	}
+	routines.Wait()
 	closeFile()
 }
