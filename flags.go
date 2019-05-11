@@ -120,7 +120,7 @@ func parseFlags(arguments []string) Gopier {
 	var currentArguments []string
 	for argument := range arguments {
 		found := false
-		if strings.HasPrefix(arguments[argument], "-") || strings.HasPrefix(arguments[argument], "--") {
+		if strings.HasPrefix(arguments[argument], "-") {
 			if currentFlag.name != "" {
 				if len(currentArguments) != 0 {
 					currentFlag.function(currentArguments...)
@@ -130,8 +130,9 @@ func parseFlags(arguments []string) Gopier {
 				}
 			}
 			for flag := range flags {
-				for flagType := range flags[flag].flags {
-					if arguments[argument] == flags[flag].flags[flagType] {
+				allFlags := flags[flag].flags
+				for flagType := range allFlags {
+					if arguments[argument] == allFlags[flagType] {
 						found = true
 						if flags[flag].requiresTrailing == false {
 							flags[flag].function("None")

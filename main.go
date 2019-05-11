@@ -62,14 +62,9 @@ func main() {
 			if _, ok := assemledFiles[fileExtension]; ok == false {
 				assemledFiles[fileExtension] = make([]string, 0)
 			}
-			assemledFiles[fileExtension] = append(assemledFiles[fileExtension], files[i])
+			filename, _ := filepath.Rel(gopier.startFolder, files[i])
+			assemledFiles[fileExtension] = append(assemledFiles[fileExtension], filename)
 		}
-	}
-	for key, value := range assemledFiles {
-		for val := range value {
-			value[val], _ = filepath.Rel(gopier.startFolder, value[val])
-		}
-		assemledFiles[key] = value
 	}
 	gopyFormat := assembleGopyFormat(assemledFiles, filepath.Base(gopier.startFolder))
 	data, _ := json.MarshalIndent(gopyFormat, "", "    ")
@@ -93,8 +88,11 @@ func main() {
 }
 
 func (gopier *Gopier) isInExtensions(extensions string) bool {
+	if gopier.extensions[0] == "." {
+		return true
+	}
 	for i := range gopier.extensions {
-		if extensions == gopier.extensions[i] || gopier.extensions[0] == "." {
+		if extensions == gopier.extensions[i] {
 			return true
 		}
 	}
