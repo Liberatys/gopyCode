@@ -11,17 +11,24 @@ At the moment it is just a basic implementation, but in the future, I can see a 
 
 # Usage
 
-    [-o --o -out]    output
-            Define the ouput file for gopyCode like
-                -> -o output.txt
+    gopyCode [-o, -s, -ex, -t]
+
+    [-o --o -out]        output
+         Define the ouput file for gopyCode like
+                 -> -o output.txt
 
     [-s --s -src]        start
-            Set the starting folder for gopyCode like
-                -> -src .
+         Set the starting folder for gopyCode like
+                 -> -src .
 
     [-ex -e --e] extensions
-            Define the extennsions, gopyCode should look for like
+         Define the extennsions, gopyCode should look for like 
                 -> -ex .java .go
+
+    [-t --timer -timed --timed]  timed
+         Let gopyCode tell you, how long it had to work like 
+                -> -t
+
 
 
 Example:
