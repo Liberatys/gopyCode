@@ -48,7 +48,7 @@ func addFlags() {
 		name:             "extensions",
 		flags:            []string{"-ex", "-e", "--e"},
 		requiresTrailing: true,
-		description: "Define the extennsions, gopyCode should look for like \n		-> -ex .java .go\n",
+		description: "Define the extennsions, gopyCode should look for like \n		-> -ex .java .go\n	 Or just take all with\n		 -> -ex .",
 		function: setExtensions,
 	})
 
@@ -90,7 +90,6 @@ func getGopyCodeManual(arg ...string) {
 			manual += fmt.Sprintf("*  %v	%v\n	 %v\n", flags[i].flags, flags[i].name, flags[i].description)
 		}
 	}
-
 	fmt.Println(fmt.Sprintf("\ngopyCode [%v]", strings.Join(allFlags, ", ")))
 	fmt.Println("\n" + manual)
 }

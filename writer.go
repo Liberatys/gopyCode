@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 )
@@ -48,11 +47,14 @@ func readFileData(filePath string) {
 	if err != nil {
 		fmt.Print(err)
 	}
-	dir := filepath.Dir(filePath)
-	fileName := "| " + filepath.Base(dir) + "/" + filepath.Base(filePath) + " |"
-	fileNameLength := len(fileName)
-	fileName = strings.Repeat("-", fileNameLength-3) + "+\n" + fileName
-	data := "+ " + fileName + "\n+ " + strings.Repeat("-", fileNameLength-3) + "+\n\n\n" + string(b[:]) + "\n\n\n"
+	wrappedFilename := wrapFileName(filePath)
+	data := wrappedFilename + string(b[:]) + "\n\n"
 	addRoutine()
 	go writeToFile([]byte(data))
+}
+
+func wrapFileName(filename string) string {
+	firstLine := "+ " + strings.Repeat("-", len(filename)) + " +\n"
+	middleLine := "| " + filename + " |\n"
+	return firstLine + middleLine + firstLine + "\n\n"
 }

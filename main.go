@@ -16,6 +16,7 @@ type Gopier struct {
 	extensions  []string
 	timer       int64
 	timed       bool
+	version     string
 }
 
 func (gopier *Gopier) checkForDefaults() {
@@ -33,7 +34,12 @@ func (gopier *Gopier) checkForDefaults() {
 		fmt.Println(fmt.Sprintf("Missing extension flag or extensions \n"))
 		getGopyCodeManual("")
 	}
+	gopier.version = version
 }
+
+const (
+	version = "v0.0.1"
+)
 
 func main() {
 	arguments := os.Args[1:]
@@ -47,43 +53,50 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	var FileExtensions map[string][]string
-	FileExtensions = make(map[string][]string)
+	var assemledFiles map[string][]string
+	assemledFiles = make(map[string][]string)
 	createNewFile(gopier.outputFile)
-	for extension := range gopier.extensions {
-		FileExtensions[gopier.extensions[extension]] = make([]string, 0)
-	}
 	for i := range files {
-		for j := range gopier.extensions {
-			if path.Ext(files[i]) == gopier.extensions[j] {
-				FileExtensions[gopier.extensions[j]] = append(FileExtensions[gopier.extensions[j]], files[i])
+		fileExtension := path.Ext(files[i])
+		if gopier.isInExtensions(fileExtension) {
+			if _, ok := assemledFiles[fileExtension]; ok == false {
+				assemledFiles[fileExtension] = make([]string, 0)
 			}
+			assemledFiles[fileExtension] = append(assemledFiles[fileExtension], files[i])
 		}
 	}
-	mapping := make(map[string][]string)
-	for key, value := range FileExtensions {
-		var newValues = make([]string, len(value))
-		for i := range value {
-			newValues[i] = filepath.Base(filepath.Dir(value[i])) + "/" + filepath.Base(value[i])
+	for key, value := range assemledFiles {
+		for val := range value {
+			value[val], _ = filepath.Rel(gopier.startFolder, value[val])
 		}
-		mapping[key] = newValues
+		assemledFiles[key] = value
 	}
-	//display overview map on top of the file
-	data, _ := json.MarshalIndent(mapping, "", "    ")
+	gopyFormat := assembleGopyFormat(assemledFiles, filepath.Base(gopier.startFolder))
+	data, _ := json.MarshalIndent(gopyFormat, "", "    ")
 	writing := string(data[:]) + "\n\n\n"
 	addRoutine()
 	writeToFile([]byte(writing))
-	for _, value := range FileExtensions {
+	delimiter := strings.Repeat("-", 80)
+	for _, value := range assemledFiles {
 		for i := range value {
 			readFileData(value[i])
 		}
 		routines.Wait()
 		addRoutine()
-		writeToFile([]byte(strings.Repeat("-", 80) + "\n"))
+		writeToFile([]byte(delimiter + "\n"))
 	}
 	routines.Wait()
 	closeFile()
 	if gopier.timed {
 		fmt.Println(fmt.Sprintf("Duration: %v ms", (time.Now().UnixNano()-gopier.timer)/1000000))
 	}
+}
+
+func (gopier *Gopier) isInExtensions(extensions string) bool {
+	for i := range gopier.extensions {
+		if extensions == gopier.extensions[i] || gopier.extensions[0] == "." {
+			return true
+		}
+	}
+	return false
 }
