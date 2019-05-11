@@ -10,6 +10,7 @@ type GopyForamt struct {
 	FileDelimiter string
 	TableView     map[string][]string
 	MetaData      MetaData
+	FilesFound    int `json:"fileFound"`
 }
 
 func assembleGopyFormat(tableView map[string][]string, baseFolder string) GopyForamt {

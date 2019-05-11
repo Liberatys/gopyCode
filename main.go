@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+/*
+	Gopier stores and works with the information that is needed for the application to run in a good and easy to maintain way.
+	Can later be appended with more information and fucntions, to expand the application and the functionality of gopyCode.
+*/
 type Gopier struct {
 	startFolder string
 	outputFile  string
@@ -19,6 +23,7 @@ type Gopier struct {
 	version     string
 }
 
+// check if flags are set, if not set the default values for variables we can set default values.
 func (gopier *Gopier) checkForDefaults() {
 	if gopier.startFolder == "" {
 		currentFilePath, err := filepath.Abs("./")
@@ -49,13 +54,21 @@ func main() {
 		gopier.timer = time.Now().UnixNano()
 	}
 	gopier.checkForDefaults()
-	files, err := getFileListOfDirectory(gopier.startFolder)
+	fileListing := newFileListing(gopier.startFolder)
+	files, err := fileListing.getFileListOfDirectory()
+	if fileListing.filesFound == false {
+		fmt.Println(fmt.Sprintf("Was not able to find any files in the given start folder: %v", gopier.startFolder))
+	}
 	if err != nil {
 		panic(err)
 	}
 	var assemledFiles map[string][]string
 	assemledFiles = make(map[string][]string)
 	createNewFile(gopier.outputFile)
+	fileCounter := 0
+	/*
+		Iterate over all found files and check if the extensions is included in the flag configuration.
+	*/
 	for i := range files {
 		fileExtension := path.Ext(files[i])
 		if gopier.isInExtensions(fileExtension) {
@@ -63,10 +76,15 @@ func main() {
 				assemledFiles[fileExtension] = make([]string, 0)
 			}
 			filename, _ := filepath.Rel(gopier.startFolder, files[i])
+			fileCounter++
 			assemledFiles[fileExtension] = append(assemledFiles[fileExtension], filename)
 		}
 	}
+	/*
+		simplify the meta data of the file with a json format, so that it can be parsed back very fast and easy.
+	*/
 	gopyFormat := assembleGopyFormat(assemledFiles, filepath.Base(gopier.startFolder))
+	gopyFormat.FilesFound = fileCounter
 	data, _ := json.MarshalIndent(gopyFormat, "", "    ")
 	writing := string(data[:]) + "\n\n\n"
 	addRoutine()

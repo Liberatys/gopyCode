@@ -1,0 +1,458 @@
+{
+    "BaseFolder": "gopyCode",
+    "FileDelimiter": "--:",
+    "TableView": {
+        ".go": [
+            "files.go",
+            "flags.go",
+            "gopyFormat.go",
+            "main.go",
+            "writer.go"
+        ]
+    },
+    "MetaData": {
+        "creationDate": "05-11-2019",
+        "creationOS": "darwin",
+        "creationVersion": "v0.0.1"
+    },
+    "fileFound": 5
+}
+
+
++ -------- +
+| files.go |
++ -------- +
+
+
+package main
+
+import (
+	"os"
+	"path/filepath"
+)
+
+type FileListing struct {
+	root         string
+	filesLocated int
+	filesFound   bool
+}
+
+func newFileListing(root string) FileListing {
+	return FileListing{
+		root: root,
+	}
+}
+
+func (fileListing *FileListing) getFileListOfDirectory() ([]string, error) {
+	var files []string
+	err := filepath.Walk(fileListing.root, func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			files = append(files, path)
+		}
+		return nil
+	})
+	fileListing.filesLocated = len(files)
+	if len(files) > 0 {
+		fileListing.filesFound = true
+	}
+	return files, err
+}
+
+
++ -------- +
+| flags.go |
++ -------- +
+
+
+package main
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+)
+
+//Flag is creating a simple struct for holding information about the flags that can be used to configure gopyCode.
+type Flag struct {
+	name             string
+	flags            []string
+	requiresTrailing bool
+	description      string
+	function         func(...string)
+}
+
+var flags = []Flag{}
+
+func addDefaultFlags() {
+	helpFlag := Flag{
+		name:             "help",
+		flags:            []string{"-h", "--h", "-help"},
+		requiresTrailing: false,
+		description:      "Display usage of gopyCode",
+		function:         getGopyCodeManual,
+	}
+	flags = append(flags, helpFlag)
+}
+
+func addFlags() {
+	flags = append(flags, Flag{
+		name:             "output",
+		flags:            []string{"-o", "--o", "-out"},
+		requiresTrailing: true,
+		description: "Define the ouput file for gopyCode like\n		 -> -o output.txt\n",
+		function: setOutPutFile,
+	})
+	flags = append(flags, Flag{
+		name:             "start",
+		flags:            []string{"-s", "--s", "-src"},
+		requiresTrailing: true,
+		description: "Set the starting folder for gopyCode like\n		 -> -src .\n",
+		function: setStartingPoint,
+	})
+	flags = append(flags, Flag{
+		name:             "extensions",
+		flags:            []string{"-ex", "-e", "--e"},
+		requiresTrailing: true,
+		description: "Define the extennsions, gopyCode should look for like \n		-> -ex .java .go\n	 Or just take all with\n		 -> -ex .",
+		function: setExtensions,
+	})
+
+	flags = append(flags, Flag{
+		name:             "timed",
+		flags:            []string{"-t", "--timer", "-timed", "--timed"},
+		requiresTrailing: false,
+		description: "Let gopyCode tell you, how long it had to work like \n		-> -t",
+		function: setTimer,
+	})
+}
+
+func setTimer(none ...string) {
+	newGopier.timed = true
+}
+
+func setExtensions(extensions ...string) {
+	newGopier.extensions = extensions
+}
+
+func setStartingPoint(startDir ...string) {
+	folder, err := filepath.Abs(startDir[0])
+	if err != nil {
+		panic(err.Error())
+	}
+	newGopier.startFolder = folder
+}
+
+func setOutPutFile(filename ...string) {
+	newGopier.outputFile = filename[0]
+}
+
+func getGopyCodeManual(arg ...string) {
+	var manual string
+	var allFlags []string
+	for i := range flags {
+		if flags[i].name != "help" {
+			allFlags = append(allFlags, flags[i].flags[0])
+			manual += fmt.Sprintf("*  %v	%v\n	 %v\n", flags[i].flags, flags[i].name, flags[i].description)
+		}
+	}
+	fmt.Println(fmt.Sprintf("\ngopyCode [%v]", strings.Join(allFlags, ", ")))
+	fmt.Println("\n" + manual)
+}
+
+func setFlags() {
+	addDefaultFlags()
+	addFlags()
+}
+
+var newGopier Gopier
+
+func checkForHelp(arguemnts []string) {
+	helpFlags := []string{"-h", "--h", "-help"}
+	for arg := range arguemnts {
+		for x := range helpFlags {
+			if arguemnts[arg] == helpFlags[x] {
+				getGopyCodeManual("")
+				os.Exit(0)
+			}
+		}
+	}
+}
+
+func parseFlags(arguments []string) Gopier {
+	checkForHelp(arguments)
+	newGopier = Gopier{}
+	var currentFlag Flag
+	var currentArguments []string
+	for argument := range arguments {
+		found := false
+		if strings.HasPrefix(arguments[argument], "-") {
+			if currentFlag.name != "" {
+				if len(currentArguments) != 0 {
+					currentFlag.function(currentArguments...)
+					currentArguments = make([]string, 0)
+				} else {
+					panic(fmt.Sprintf("%v [%v] is in need of arguments", currentFlag.name, strings.Join(currentFlag.flags, ", ")))
+				}
+			}
+			for flag := range flags {
+				allFlags := flags[flag].flags
+				for flagType := range allFlags {
+					if arguments[argument] == allFlags[flagType] {
+						found = true
+						if flags[flag].requiresTrailing == false {
+							flags[flag].function("None")
+							if flags[flag].name == "help" {
+								os.Exit(0)
+							}
+							currentFlag = Flag{}
+						} else {
+							currentFlag = flags[flag]
+						}
+					}
+				}
+
+			}
+			if found == false {
+				fmt.Println(fmt.Sprintf("{\n	%v doesn't seem to be a known flag\n 	Use -h or --help for help with gopyCode\n}", arguments[argument]))
+				os.Exit(0)
+			}
+		} else {
+			currentArguments = append(currentArguments, arguments[argument])
+		}
+	}
+	if currentFlag.name != "" {
+		currentFlag.function(currentArguments...)
+	}
+	return newGopier
+}
+
+
++ ------------- +
+| gopyFormat.go |
++ ------------- +
+
+
+package main
+
+import (
+	"runtime"
+	"time"
+)
+
+type GopyForamt struct {
+	BaseFolder    string
+	FileDelimiter string
+	TableView     map[string][]string
+	MetaData      MetaData
+	FilesFound    int `json:"fileFound"`
+}
+
+func assembleGopyFormat(tableView map[string][]string, baseFolder string) GopyForamt {
+	gopyFormat := GopyForamt{
+		MetaData:      assembleMetaData(),
+		FileDelimiter: "--:",
+		TableView:     tableView,
+		BaseFolder:    baseFolder,
+	}
+	return gopyFormat
+}
+
+type MetaData struct {
+	CreationDate string `json:"creationDate"`
+	HostPlatform string `json:"creationOS"`
+	Version      string `json:"creationVersion"`
+}
+
+func assembleMetaData() MetaData {
+	metaData := MetaData{
+		CreationDate: time.Now().Format("01-02-2006"),
+		HostPlatform: runtime.GOOS,
+		Version:      version,
+	}
+	return metaData
+}
+
+
++ ------- +
+| main.go |
++ ------- +
+
+
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"path"
+	"path/filepath"
+	"strings"
+	"time"
+)
+
+type Gopier struct {
+	startFolder string
+	outputFile  string
+	extensions  []string
+	timer       int64
+	timed       bool
+	version     string
+}
+
+func (gopier *Gopier) checkForDefaults() {
+	if gopier.startFolder == "" {
+		currentFilePath, err := filepath.Abs("./")
+		if err != nil {
+			panic("Not able to find current folder")
+		}
+		gopier.startFolder = currentFilePath
+	}
+	if gopier.outputFile == "" {
+		gopier.outputFile = "output.txt"
+	}
+	if len(gopier.extensions) == 0 {
+		fmt.Println(fmt.Sprintf("Missing extension flag or extensions \n"))
+		getGopyCodeManual("")
+	}
+	gopier.version = version
+}
+
+const (
+	version = "v0.0.1"
+)
+
+func main() {
+	arguments := os.Args[1:]
+	setFlags()
+	gopier := parseFlags(arguments)
+	if gopier.timed {
+		gopier.timer = time.Now().UnixNano()
+	}
+	gopier.checkForDefaults()
+	fileListing := newFileListing(gopier.startFolder)
+	files, err := fileListing.getFileListOfDirectory()
+	if fileListing.filesFound == false {
+		fmt.Println(fmt.Sprintf("Was not able to find any files in the given start folder: %v", gopier.startFolder))
+	}
+	if err != nil {
+		panic(err)
+	}
+	var assemledFiles map[string][]string
+	assemledFiles = make(map[string][]string)
+	createNewFile(gopier.outputFile)
+	fileCounter := 0
+	for i := range files {
+		fileExtension := path.Ext(files[i])
+		if gopier.isInExtensions(fileExtension) {
+			if _, ok := assemledFiles[fileExtension]; ok == false {
+				assemledFiles[fileExtension] = make([]string, 0)
+			}
+			filename, _ := filepath.Rel(gopier.startFolder, files[i])
+			fileCounter++
+			assemledFiles[fileExtension] = append(assemledFiles[fileExtension], filename)
+		}
+	}
+	gopyFormat := assembleGopyFormat(assemledFiles, filepath.Base(gopier.startFolder))
+	gopyFormat.FilesFound = fileCounter
+	data, _ := json.MarshalIndent(gopyFormat, "", "    ")
+	writing := string(data[:]) + "\n\n\n"
+	addRoutine()
+	writeToFile([]byte(writing))
+	delimiter := strings.Repeat("-", 80)
+	for _, value := range assemledFiles {
+		for i := range value {
+			readFileData(value[i])
+		}
+		routines.Wait()
+		addRoutine()
+		writeToFile([]byte(delimiter + "\n"))
+	}
+	routines.Wait()
+	closeFile()
+	if gopier.timed {
+		fmt.Println(fmt.Sprintf("Duration: %v ms", (time.Now().UnixNano()-gopier.timer)/1000000))
+	}
+}
+
+func (gopier *Gopier) isInExtensions(extensions string) bool {
+	if gopier.extensions[0] == "." {
+		return true
+	}
+	for i := range gopier.extensions {
+		if extensions == gopier.extensions[i] {
+			return true
+		}
+	}
+	return false
+}
+
+
++ --------- +
+| writer.go |
++ --------- +
+
+
+package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
+	"sync"
+)
+
+var mu sync.Mutex
+var file *os.File
+var routines sync.WaitGroup
+
+func createNewFile(fileName string) {
+	mu.Lock()
+	f, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	if err != nil {
+		panic(err)
+	}
+	file = f
+	mu.Unlock()
+}
+
+func writeToFile(data []byte) {
+	mu.Lock()
+	defer routines.Done()
+	file.Write([]byte(data))
+	mu.Unlock()
+}
+
+func closeFile() {
+	mu.Lock()
+	err := file.Close()
+	if err != nil {
+		panic(err)
+	}
+	mu.Unlock()
+}
+
+func addRoutine() {
+	routines.Add(1)
+}
+
+func readFileData(filePath string) {
+	b, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		fmt.Print(err)
+	}
+	wrappedFilename := wrapFileName(filePath)
+	data := wrappedFilename + string(b[:]) + "\n\n"
+	addRoutine()
+	go writeToFile([]byte(data))
+}
+
+func wrapFileName(filename string) string {
+	firstLine := "+ " + strings.Repeat("-", len(filename)) + " +\n"
+	middleLine := "| " + filename + " |\n"
+	return firstLine + middleLine + firstLine + "\n\n"
+}
+
+
+--------------------------------------------------------------------------------

@@ -29,6 +29,11 @@ func addDefaultFlags() {
 	flags = append(flags, helpFlag)
 }
 
+/*
+	Setting the default flags that can be used in the configuration of gopyCode.
+	Re also used as the template for the help method of the flags.
+	On -h all flags below are parsed and display as a quick overview menu.
+*/
 func addFlags() {
 	flags = append(flags, Flag{
 		name:             "output",

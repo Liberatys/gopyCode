@@ -47,6 +47,7 @@ func readFileData(filePath string) {
 	if err != nil {
 		fmt.Print(err)
 	}
+	//wrap the filename into a good looking and easy findable box that can be searched for in a better way.
 	wrappedFilename := wrapFileName(filePath)
 	data := wrappedFilename + string(b[:]) + "\n\n"
 	addRoutine()
