@@ -1,2 +1,3 @@
 *gopyCode
 *.DS_Store
+.vscode/*

@@ -120,14 +120,20 @@ func parseFlags(arguments []string) Gopier {
 	var currentFlag Flag
 	var currentArguments []string
 	for argument := range arguments {
+		found := false
 		if strings.HasPrefix(arguments[argument], "-") || strings.HasPrefix(arguments[argument], "--") {
 			if currentFlag.name != "" {
-				currentFlag.function(currentArguments...)
-				currentArguments = make([]string, 0)
+				if len(currentArguments) != 0 {
+					currentFlag.function(currentArguments...)
+					currentArguments = make([]string, 0)
+				} else {
+					panic(fmt.Sprintf("%v [%v] is in need of arguments", currentFlag.name, strings.Join(currentFlag.flags, ", ")))
+				}
 			}
 			for flag := range flags {
 				for flagType := range flags[flag].flags {
 					if arguments[argument] == flags[flag].flags[flagType] {
+						found = true
 						if flags[flag].requiresTrailing == false {
 							flags[flag].function("None")
 							if flags[flag].name == "help" {
@@ -138,8 +144,12 @@ func parseFlags(arguments []string) Gopier {
 							currentFlag = flags[flag]
 						}
 					}
-					break
 				}
+
+			}
+			if found == false {
+				fmt.Println(fmt.Sprintf("{\n	%v doesn't seem to be a known flag\n 	Use -h or --help for help with gopyCode\n}", arguments[argument]))
+				os.Exit(0)
 			}
 		} else {
 			currentArguments = append(currentArguments, arguments[argument])

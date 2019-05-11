@@ -30,7 +30,8 @@ func (gopier *Gopier) checkForDefaults() {
 		gopier.outputFile = "output.txt"
 	}
 	if len(gopier.extensions) == 0 {
-		panic("Please set extensions to use")
+		fmt.Println(fmt.Sprintf("Missing extension flag or extensions \n"))
+		getGopyCodeManual("")
 	}
 }
 
