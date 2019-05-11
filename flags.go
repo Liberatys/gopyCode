@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+//Flag is creating a simple struct for holding information about the flags that can be used to configure gopyCode.
 type Flag struct {
 	name             string
 	flags            []string
@@ -43,7 +44,6 @@ func addFlags() {
 		description: "Set the starting folder for gopyCode like\n		 -> -src .\n",
 		function: setStartingPoint,
 	})
-
 	flags = append(flags, Flag{
 		name:             "extensions",
 		flags:            []string{"-ex", "-e", "--e"},
@@ -51,6 +51,18 @@ func addFlags() {
 		description: "Define the extennsions, gopyCode should look for like \n		-> -ex .java .go\n",
 		function: setExtensions,
 	})
+
+	flags = append(flags, Flag{
+		name:             "timed",
+		flags:            []string{"-t", "--timer", "-timed", "--timed"},
+		requiresTrailing: false,
+		description: "Let gopyCode tell you, how long it had to work like \n		-> -t",
+		function: setTimer,
+	})
+}
+
+func setTimer(none ...string) {
+	newGopier.timed = true
 }
 
 func setExtensions(extensions ...string) {
@@ -71,11 +83,15 @@ func setOutPutFile(filename ...string) {
 
 func getGopyCodeManual(arg ...string) {
 	var manual string
+	var allFlags []string
 	for i := range flags {
 		if flags[i].name != "help" {
+			allFlags = append(allFlags, flags[i].flags[0])
 			manual += fmt.Sprintf("*  %v	%v\n	 %v\n", flags[i].flags, flags[i].name, flags[i].description)
 		}
 	}
+
+	fmt.Println(fmt.Sprintf("\ngopyCode [%v]", strings.Join(allFlags, ", ")))
 	fmt.Println("\n" + manual)
 }
 
@@ -86,7 +102,20 @@ func setFlags() {
 
 var newGopier Gopier
 
+func checkForHelp(arguemnts []string) {
+	helpFlags := []string{"-h", "--h", "-help"}
+	for arg := range arguemnts {
+		for x := range helpFlags {
+			if arguemnts[arg] == helpFlags[x] {
+				getGopyCodeManual("")
+				os.Exit(0)
+			}
+		}
+	}
+}
+
 func parseFlags(arguments []string) Gopier {
+	checkForHelp(arguments)
 	newGopier = Gopier{}
 	var currentFlag Flag
 	var currentArguments []string
@@ -104,6 +133,7 @@ func parseFlags(arguments []string) Gopier {
 							if flags[flag].name == "help" {
 								os.Exit(0)
 							}
+							currentFlag = Flag{}
 						} else {
 							currentFlag = flags[flag]
 						}
@@ -115,7 +145,7 @@ func parseFlags(arguments []string) Gopier {
 			currentArguments = append(currentArguments, arguments[argument])
 		}
 	}
-	if currentFlag.requiresTrailing == true {
+	if currentFlag.name != "" {
 		currentFlag.function(currentArguments...)
 	}
 	return newGopier

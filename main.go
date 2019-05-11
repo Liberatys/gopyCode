@@ -2,16 +2,20 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type Gopier struct {
 	startFolder string
 	outputFile  string
 	extensions  []string
+	timer       int64
+	timed       bool
 }
 
 func (gopier *Gopier) checkForDefaults() {
@@ -34,6 +38,9 @@ func main() {
 	arguments := os.Args[1:]
 	setFlags()
 	gopier := parseFlags(arguments)
+	if gopier.timed {
+		gopier.timer = time.Now().UnixNano()
+	}
 	gopier.checkForDefaults()
 	files, err := getFileListOfDirectory(gopier.startFolder)
 	if err != nil {
@@ -75,4 +82,7 @@ func main() {
 	}
 	routines.Wait()
 	closeFile()
+	if gopier.timed {
+		fmt.Println(fmt.Sprintf("Duration: %v ms", (time.Now().UnixNano()-gopier.timer)/1000000))
+	}
 }

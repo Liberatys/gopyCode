@@ -43,4 +43,4 @@ This looks something like this:
 
 # Future
 
-I hacked this for a project, where I had to send all my source code in a single file. So I just wrote this little helper and it was done in about 5s with all files.
+I hacked this for a project, where I had to send all my source code in a single file. So I just wrote this little helper and it was done in about 1s with all files.
