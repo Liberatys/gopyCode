@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"runtime"
 	"time"
 )
@@ -21,6 +22,11 @@ func assembleGopyFormat(tableView map[string][]string, baseFolder string) GopyFo
 		BaseFolder:    baseFolder,
 	}
 	return gopyFormat
+}
+
+func (gopyFormat *GopyForamt) convertToJSON() string {
+	data, _ := json.MarshalIndent(gopyFormat, "", "    ")
+	return string(data[:])
 }
 
 type MetaData struct {

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path"
@@ -75,8 +74,8 @@ func main() {
 			if _, ok := assemledFiles[fileExtension]; ok == false {
 				assemledFiles[fileExtension] = make([]string, 0)
 			}
-			filename, _ := filepath.Rel(gopier.startFolder, files[i])
 			fileCounter++
+			filename, _ := filepath.Rel(gopier.startFolder, files[i])
 			assemledFiles[fileExtension] = append(assemledFiles[fileExtension], filename)
 		}
 	}
@@ -85,8 +84,7 @@ func main() {
 	*/
 	gopyFormat := assembleGopyFormat(assemledFiles, filepath.Base(gopier.startFolder))
 	gopyFormat.FilesFound = fileCounter
-	data, _ := json.MarshalIndent(gopyFormat, "", "    ")
-	writing := string(data[:]) + "\n\n\n"
+	writing := gopyFormat.convertToJSON() + "\n\n\n"
 	addRoutine()
 	writeToFile([]byte(writing))
 	delimiter := strings.Repeat("-", 80)
