@@ -37,12 +37,13 @@ func (gopier *Gopier) checkForDefaults() {
 	if len(gopier.extensions) == 0 {
 		fmt.Println(fmt.Sprintf("Missing extension flag or extensions \n"))
 		getGopyCodeManual("")
+		os.Exit(0)
 	}
 	gopier.version = version
 }
 
 const (
-	version = "v0.0.1"
+	version = "v0.0.2"
 )
 
 func main() {
@@ -104,6 +105,9 @@ func main() {
 }
 
 func (gopier *Gopier) isInExtensions(extensions string) bool {
+	if len(gopier.extensions) == 0 {
+		return false
+	}
 	if gopier.extensions[0] == "." {
 		return true
 	}

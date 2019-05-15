@@ -30,10 +30,11 @@ func addDefaultFlags() {
 }
 
 /*
-	Setting the default flags that can be used in the configuration of gopyCode.
-	Re also used as the template for the help method of the flags.
+	Seting the default flags that can be used in the configuration of gopyCode.
+	Also used as the template for the help method of the flags.
 	On -h all flags below are parsed and display as a quick overview menu.
 */
+
 func addFlags() {
 	flags = append(flags, Flag{
 		name:             "output",
@@ -97,14 +98,13 @@ func getGopyCodeManual(arg ...string) {
 	}
 	fmt.Println(fmt.Sprintf("\ngopyCode [%v]", strings.Join(allFlags, ", ")))
 	fmt.Println("\n" + manual)
+	fmt.Print("Example:\n\tgopyCode -ex .go .java -o output.txt\n\n")
 }
 
 func setFlags() {
 	addDefaultFlags()
 	addFlags()
 }
-
-var newGopier Gopier
 
 func checkForHelp(arguemnts []string) {
 	helpFlags := []string{"-h", "--h", "-help"}
@@ -117,6 +117,8 @@ func checkForHelp(arguemnts []string) {
 		}
 	}
 }
+
+var newGopier Gopier
 
 func parseFlags(arguments []string) Gopier {
 	checkForHelp(arguments)
@@ -150,7 +152,6 @@ func parseFlags(arguments []string) Gopier {
 						}
 					}
 				}
-
 			}
 			if found == false {
 				fmt.Println(fmt.Sprintf("{\n	%v doesn't seem to be a known flag\n 	Use -h or --help for help with gopyCode\n}", arguments[argument]))

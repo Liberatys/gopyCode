@@ -9,7 +9,6 @@ import (
 	Create a struct for later use of more work with the file system and the files that are found in the filesystem.
 	For the moment just a placeholder for the correct implementation.
 */
-
 type FileListing struct {
 	root         string
 	filesLocated int
