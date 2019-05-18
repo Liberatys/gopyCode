@@ -30,7 +30,6 @@ At the moment it is just a basic implementation, but in the future, I can see a 
                 -> -t
 
 
-
 Example:
 
     gopyCode -o output.txt -s . -ex .go .java

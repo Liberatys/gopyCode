@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/alexeyco/simpletable"
 )
 
 /*
@@ -83,9 +85,33 @@ func main() {
 	/*
 		simplify the meta data of the file with a json format, so that it can be parsed back very fast and easy.
 	*/
+	tabling := simpletable.New()
+	tabling.Header = &simpletable.Header{
+		Cells: []*simpletable.Cell{&simpletable.Cell{
+			Text: "Exptension",
+		},
+			&simpletable.Cell{
+				Text: "Files",
+			},
+		},
+	}
+	for key, value := range assemledFiles {
+		r := []*simpletable.Cell{
+			&simpletable.Cell{
+				Text: fmt.Sprintf("%v", key),
+			},
+			&simpletable.Cell{
+				Text: fmt.Sprintf("%v", len(value)),
+			},
+		}
+		tabling.Body.Cells = append(tabling.Body.Cells, r)
+	}
+	tabling.SetStyle(simpletable.StyleUnicode)
 	gopyFormat := assembleGopyFormat(assemledFiles, filepath.Base(gopier.startFolder))
 	gopyFormat.FilesFound = fileCounter
 	writing := gopyFormat.convertToJSON() + "\n\n\n"
+	addRoutine()
+	writeToFile([]byte("Files by extension table: \n" + tabling.String() + "\n\n\n"))
 	addRoutine()
 	writeToFile([]byte(writing))
 	delimiter := strings.Repeat("-", 80)
